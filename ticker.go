@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Ticker is a summary of the last 24 hours
 type Ticker struct {
 	Coin        Coin
 	Description string
@@ -53,7 +54,7 @@ func GetTicker(coin Coin) (*Ticker, error) {
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		msg, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error decoding ticker for coin %s: %s", coin, msg)
+		return nil, fmt.Errorf("error decoding ticker for coin %s: %s: %s", coin, err, msg)
 	}
 
 	response.Ticker.Coin = coin
