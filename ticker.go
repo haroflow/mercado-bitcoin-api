@@ -32,7 +32,7 @@ func GetTicker(coin Coin) (*Ticker, error) {
 	url := "https://www.mercadobitcoin.net/api/" + string(coin) + "/ticker/"
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error requesting ticker: %s", err)
+		return nil, fmt.Errorf("error requesting ticker for coin %s: %s", coin, err)
 	}
 	defer resp.Body.Close()
 
@@ -53,7 +53,7 @@ func GetTicker(coin Coin) (*Ticker, error) {
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		msg, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("error decoding ticker: %s", msg)
+		return nil, fmt.Errorf("error decoding ticker for coin %s: %s", coin, msg)
 	}
 
 	response.Ticker.Coin = coin

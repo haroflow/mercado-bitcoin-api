@@ -21,6 +21,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(r)
+		fmt.Printf("%-10s R$ %14f\n", r.Coin, r.Last)
 	}
 }
