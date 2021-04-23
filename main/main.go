@@ -5,6 +5,8 @@ import (
 	"os"
 
 	mercadobitcoin "github.com/haroflow/mercado-bitcoin-api"
+	"github.com/haroflow/mercado-bitcoin-api/service"
+	"github.com/haroflow/mercado-bitcoin-api/types"
 )
 
 func main() {
@@ -12,15 +14,16 @@ func main() {
 	fmt.Println()
 
 	fmt.Println("# Ticker example:")
-	coins := []mercadobitcoin.Coin{
+	coins := []types.Coin{
 		"BTC",
 		"LTC",
 		"CHZ",
 		"XRP",
 	}
 
+	api := mercadobitcoin.NewClient()
 	for _, coin := range coins {
-		ticker, err := mercadobitcoin.GetTicker(coin)
+		ticker, err := api.GetTicker(coin)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -30,7 +33,7 @@ func main() {
 	fmt.Println()
 
 	fmt.Println("# Trades example:")
-	trades, err := mercadobitcoin.GetTrades("BTC", nil)
+	trades, err := api.GetTrades("BTC", nil)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -42,7 +45,7 @@ func main() {
 	fmt.Printf("Total trades returned: %d\n\n", len(trades))
 
 	fmt.Println("# Trades with timestamp after 1501871369:")
-	trades, err = mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+	trades, err = api.GetTrades("BTC", &service.GetTradesFilter{
 		FromTimestamp: "1501871369",
 	})
 	if err != nil {
@@ -56,7 +59,7 @@ func main() {
 	fmt.Printf("Total trades returned: %d\n\n", len(trades))
 
 	fmt.Println("# Trades with timestamp between 1501871369 and 1501871388:")
-	trades, err = mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+	trades, err = api.GetTrades("BTC", &service.GetTradesFilter{
 		FromTimestamp: "1501871369",
 		ToTimestamp:   "1501871388",
 	})
@@ -71,7 +74,7 @@ func main() {
 	fmt.Printf("Total trades returned: %d\n\n", len(trades))
 
 	fmt.Println("# Trades with Transaction ID after 5000:")
-	trades, err = mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+	trades, err = api.GetTrades("BTC", &service.GetTradesFilter{
 		TID: "5000",
 	})
 	if err != nil {

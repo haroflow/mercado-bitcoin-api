@@ -1,4 +1,4 @@
-package mercadobitcoin
+package types
 
 // Coin is the ticker (identifier, name) of a coin
 type Coin string

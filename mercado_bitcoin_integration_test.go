@@ -4,11 +4,13 @@ import (
 	"testing"
 
 	mercadobitcoin "github.com/haroflow/mercado-bitcoin-api"
+	"github.com/haroflow/mercado-bitcoin-api/service"
 )
 
 func TestGetTicker(t *testing.T) {
 	t.Run("existing coin should respond OK", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTicker("BTC")
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTicker("BTC")
 
 		assertNoError(t, err)
 
@@ -18,7 +20,8 @@ func TestGetTicker(t *testing.T) {
 	})
 
 	t.Run("non existing coin should error", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTicker("AAAAAAAAAAAA")
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTicker("AAAAAAAAAAAA")
 
 		assertError(t, err)
 
@@ -30,7 +33,8 @@ func TestGetTicker(t *testing.T) {
 
 func TestGetTrades(t *testing.T) {
 	t.Run("existing coin should respond OK", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTrades("BTC", nil)
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTrades("BTC", nil)
 
 		assertNoError(t, err)
 
@@ -44,7 +48,8 @@ func TestGetTrades(t *testing.T) {
 	})
 
 	t.Run("non existing coin should error", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTrades("AAAAAAAAAAAA", nil)
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTrades("AAAAAAAAAAAA", nil)
 
 		assertError(t, err)
 
@@ -54,7 +59,8 @@ func TestGetTrades(t *testing.T) {
 	})
 
 	t.Run("trades after timestamp", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTrades("BTC", &service.GetTradesFilter{
 			FromTimestamp: "1501871369",
 		})
 
@@ -70,7 +76,8 @@ func TestGetTrades(t *testing.T) {
 	})
 
 	t.Run("trades between two timestamps", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTrades("BTC", &service.GetTradesFilter{
 			FromTimestamp: "1501871369",
 			ToTimestamp:   "1501891200",
 		})
@@ -87,7 +94,8 @@ func TestGetTrades(t *testing.T) {
 	})
 
 	t.Run("trades after TID 5000", func(t *testing.T) {
-		got, err := mercadobitcoin.GetTrades("BTC", &mercadobitcoin.GetTradesFilter{
+		api := mercadobitcoin.NewClient()
+		got, err := api.GetTrades("BTC", &service.GetTradesFilter{
 			TID: "5000",
 		})
 
@@ -114,26 +122,5 @@ func assertError(t testing.TB, err error) {
 	t.Helper()
 	if err == nil {
 		t.Errorf("expected an error, got %q", err)
-	}
-}
-
-func assertGotResponse(t testing.TB, response string) {
-	t.Helper()
-	if response == "" {
-		t.Errorf("should have received a response, got %q", response)
-	}
-}
-
-func assertEqual(t testing.TB, got, want string) {
-	t.Helper()
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
-}
-
-func assertNotNil(t testing.TB, got interface{}) {
-	t.Helper()
-	if got == nil {
-		t.Errorf("got nil")
 	}
 }
