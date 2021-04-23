@@ -149,4 +149,37 @@ func TestClientGetTrades(t *testing.T) {
 			t.Fatalf("didnt expected response, got %v", resp)
 		}
 	})
+
+	t.Run("return error on http failure", func(t *testing.T) {
+		fakeResponse := func() (*http.Response, error) {
+			return &http.Response{}, fmt.Errorf("Failed to GET response")
+		}
+
+		api := &mercadobitcoin.Client{
+			Service: &StubMercadoBitcoinAPI{
+				FakeGetTrades: fakeResponse,
+			},
+		}
+
+		resp, err := api.GetTrades("BTC", nil)
+
+		assertError(t, err)
+		if resp != nil {
+			t.Fatalf("didnt expected response, got %v", resp)
+		}
+	})
+}
+
+func assertError(t testing.TB, err error) {
+	t.Helper()
+	if err == nil {
+		t.Errorf("expected an error, got %q", err)
+	}
+}
+
+func assertNoError(t testing.TB, err error) {
+	t.Helper()
+	if err != nil {
+		t.Errorf("didnt expected an error, got %q", err)
+	}
 }
