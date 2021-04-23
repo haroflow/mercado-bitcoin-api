@@ -31,3 +31,8 @@ func (d *Default) GetTrades(coin types.Coin, filter *GetTradesFilter) (*http.Res
 
 	return http.Get(url)
 }
+
+func (d *Default) GetDaySummary(coin types.Coin, day, month, year int) (*http.Response, error) {
+	url := fmt.Sprintf("https://www.mercadobitcoin.net/api/%s/day-summary/%d/%d/%d", coin, year, month, day)
+	return http.Get(url)
+}

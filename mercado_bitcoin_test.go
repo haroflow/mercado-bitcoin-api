@@ -24,6 +24,9 @@ func (s *StubMercadoBitcoinAPI) GetTicker(coin types.Coin) (*http.Response, erro
 func (s *StubMercadoBitcoinAPI) GetTrades(coin types.Coin, filter *service.GetTradesFilter) (*http.Response, error) {
 	return s.FakeGetTrades()
 }
+func (s *StubMercadoBitcoinAPI) GetDaySummary(coin types.Coin, day, month, year int) (*http.Response, error) {
+	return nil, nil
+}
 
 func TestClientGetTicker(t *testing.T) {
 	t.Run("return ticker for a valid coin name", func(t *testing.T) {
