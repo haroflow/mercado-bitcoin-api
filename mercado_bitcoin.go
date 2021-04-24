@@ -78,3 +78,37 @@ func (c *Client) GetTrades(coin types.Coin, filter *service.GetTradesFilter) ([]
 
 	return trades, nil
 }
+
+// GetDaySummary returns the summary for the coin on a specific date.
+func (c *Client) GetDaySummary(coin types.Coin, day, month, year int) (*types.DaySummary, error) {
+	resp, err := c.Service.GetDaySummary(coin, day, month, year)
+	if err != nil {
+		return nil, fmt.Errorf("error requesting day summary for coin %s: %s", coin, err)
+	}
+	defer resp.Body.Close()
+
+	// Example response:
+	// {
+	// 	"date": "2020-02-01",
+	// 	"opening": 40009.09990999,
+	// 	"closing": 39755,
+	// 	"lowest": 39700,
+	// 	"highest": 40139.98,
+	// 	"volume": 1557826.34691214,
+	// 	"quantity": 39.09361166,
+	// 	"amount": 1668,
+	// 	"avg_price": 39848.61671161
+	// }
+	var response *types.DaySummary
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding day summary for coin %s: %s", coin, err)
+	}
+
+	response.Date, err = time.Parse("2006-01-02", response.DateStr)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding date %s: %s", response.DateStr, err)
+	}
+
+	return response, nil
+}

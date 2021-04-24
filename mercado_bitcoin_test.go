@@ -12,9 +12,21 @@ import (
 	"github.com/haroflow/mercado-bitcoin-api/types"
 )
 
+var FakeResponseNotFound = func() (*http.Response, error) {
+	return &http.Response{
+		StatusCode: 404,
+		Body:       ioutil.NopCloser(strings.NewReader(`Not Found`)),
+	}, nil
+}
+
+var FakeResponse500 = func() (*http.Response, error) {
+	return &http.Response{}, fmt.Errorf("Failed to GET response")
+}
+
 type StubMercadoBitcoinAPI struct {
-	FakeGetTicker func() (*http.Response, error)
-	FakeGetTrades func() (*http.Response, error)
+	FakeGetTicker     func() (*http.Response, error)
+	FakeGetTrades     func() (*http.Response, error)
+	FakeGetDaySummary func() (*http.Response, error)
 }
 
 func (s *StubMercadoBitcoinAPI) GetTicker(coin types.Coin) (*http.Response, error) {
@@ -24,8 +36,9 @@ func (s *StubMercadoBitcoinAPI) GetTicker(coin types.Coin) (*http.Response, erro
 func (s *StubMercadoBitcoinAPI) GetTrades(coin types.Coin, filter *service.GetTradesFilter) (*http.Response, error) {
 	return s.FakeGetTrades()
 }
+
 func (s *StubMercadoBitcoinAPI) GetDaySummary(coin types.Coin, day, month, year int) (*http.Response, error) {
-	return nil, nil
+	return s.FakeGetDaySummary()
 }
 
 func TestClientGetTicker(t *testing.T) {
@@ -64,16 +77,9 @@ func TestClientGetTicker(t *testing.T) {
 	})
 
 	t.Run("return error 'Not Found' for an invalid coin name", func(t *testing.T) {
-		fakeResponse := func() (*http.Response, error) {
-			return &http.Response{
-				StatusCode: 404,
-				Body:       ioutil.NopCloser(strings.NewReader("Not Found")),
-			}, nil
-		}
-
 		api := &mercadobitcoin.Client{
 			Service: &StubMercadoBitcoinAPI{
-				FakeGetTicker: fakeResponse,
+				FakeGetTicker: FakeResponseNotFound,
 			},
 		}
 
@@ -86,13 +92,9 @@ func TestClientGetTicker(t *testing.T) {
 	})
 
 	t.Run("return error on http failure", func(t *testing.T) {
-		fakeResponse := func() (*http.Response, error) {
-			return &http.Response{}, fmt.Errorf("Failed to GET response")
-		}
-
 		api := &mercadobitcoin.Client{
 			Service: &StubMercadoBitcoinAPI{
-				FakeGetTicker: fakeResponse,
+				FakeGetTicker: FakeResponse500,
 			},
 		}
 
@@ -132,16 +134,9 @@ func TestClientGetTrades(t *testing.T) {
 	})
 
 	t.Run("return error 'Not Found' for an invalid coin name", func(t *testing.T) {
-		fakeResponse := func() (*http.Response, error) {
-			return &http.Response{
-				StatusCode: 404,
-				Body:       ioutil.NopCloser(strings.NewReader("Not Found")),
-			}, nil
-		}
-
 		api := &mercadobitcoin.Client{
 			Service: &StubMercadoBitcoinAPI{
-				FakeGetTrades: fakeResponse,
+				FakeGetTrades: FakeResponseNotFound,
 			},
 		}
 
@@ -154,17 +149,76 @@ func TestClientGetTrades(t *testing.T) {
 	})
 
 	t.Run("return error on http failure", func(t *testing.T) {
-		fakeResponse := func() (*http.Response, error) {
-			return &http.Response{}, fmt.Errorf("Failed to GET response")
-		}
-
 		api := &mercadobitcoin.Client{
 			Service: &StubMercadoBitcoinAPI{
-				FakeGetTrades: fakeResponse,
+				FakeGetTrades: FakeResponse500,
 			},
 		}
 
 		resp, err := api.GetTrades("BTC", nil)
+
+		assertError(t, err)
+		if resp != nil {
+			t.Fatalf("didnt expected response, got %v", resp)
+		}
+	})
+}
+
+func TestClientGetDaySummary(t *testing.T) {
+	t.Run("should return day summary when called with a valid coin", func(t *testing.T) {
+		fakeResponse := func() (*http.Response, error) {
+			return &http.Response{
+				StatusCode: 200,
+				Body:       ioutil.NopCloser(strings.NewReader(`{"date":"2020-02-01","opening":40009.09990999,"closing":39755,"lowest":39700,"highest":40139.98,"volume":1557826.34691214,"quantity":39.09361166,"amount":1668,"avg_price":39848.61671161}`)),
+			}, nil
+		}
+
+		api := &mercadobitcoin.Client{
+			Service: &StubMercadoBitcoinAPI{
+				FakeGetDaySummary: fakeResponse,
+			},
+		}
+
+		day, month, year := 1, 2, 2020
+		resp, err := api.GetDaySummary("BTC", day, month, year)
+
+		if err != nil {
+			t.Fatalf("didnt expected an error, got %s", err)
+		}
+		if resp == nil {
+			t.Fatal("expected response, got nil")
+		}
+
+		if resp.Date.IsZero() {
+			t.Errorf("expected date, got %s", resp.Date)
+		}
+	})
+
+	t.Run("should return an error when called with an invalid coin", func(t *testing.T) {
+		api := &mercadobitcoin.Client{
+			Service: &StubMercadoBitcoinAPI{
+				FakeGetDaySummary: FakeResponseNotFound,
+			},
+		}
+
+		day, month, year := 1, 2, 2020
+		resp, err := api.GetDaySummary("123BTC123", day, month, year)
+
+		assertError(t, err)
+		if resp != nil {
+			t.Errorf("didnt expect a response, got %v", resp)
+		}
+	})
+
+	t.Run("return error on http failure", func(t *testing.T) {
+		api := &mercadobitcoin.Client{
+			Service: &StubMercadoBitcoinAPI{
+				FakeGetDaySummary: FakeResponse500,
+			},
+		}
+
+		day, month, year := 1, 2, 2020
+		resp, err := api.GetDaySummary("BTC", day, month, year)
 
 		assertError(t, err)
 		if resp != nil {

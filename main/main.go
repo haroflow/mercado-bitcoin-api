@@ -87,4 +87,11 @@ func main() {
 	}
 	fmt.Printf("Total trades returned: %d\n\n", len(trades))
 
+	fmt.Println("# Summary for 01/02/2020:")
+	daySummary, err := api.GetDaySummary("BTC", 1, 2, 2020)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(daySummary)
 }
