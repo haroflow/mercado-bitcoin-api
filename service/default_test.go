@@ -159,6 +159,34 @@ func TestGetDaySummary(t *testing.T) {
 	})
 }
 
+func TestGetOrderbook(t *testing.T) {
+	t.Run("should get status 200 for a valid coin", func(t *testing.T) {
+		s := &service.Default{}
+		resp, err := s.GetOrderbook("BTC")
+
+		assertNoError(t, err)
+		if resp == nil {
+			t.Fatal("expected a response, got nil")
+		}
+		if resp.StatusCode != 200 {
+			t.Errorf("expected status 200, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("should get status 404 for an invalid coin", func(t *testing.T) {
+		s := &service.Default{}
+		resp, err := s.GetOrderbook("123BTC321")
+
+		assertNoError(t, err)
+		if resp == nil {
+			t.Fatal("expected a response, got nil")
+		}
+		if resp.StatusCode != 404 {
+			t.Errorf("expected status 404, got %d", resp.StatusCode)
+		}
+	})
+}
+
 func assertNoError(t testing.TB, err error) {
 	t.Helper()
 	if err != nil {

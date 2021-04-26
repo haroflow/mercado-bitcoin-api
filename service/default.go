@@ -36,3 +36,8 @@ func (d *Default) GetDaySummary(coin types.Coin, day, month, year int) (*http.Re
 	url := fmt.Sprintf("https://www.mercadobitcoin.net/api/%s/day-summary/%d/%d/%d", coin, year, month, day)
 	return http.Get(url)
 }
+
+func (d *Default) GetOrderbook(coin types.Coin) (*http.Response, error) {
+	url := fmt.Sprintf("https://www.mercadobitcoin.net/api/%s/orderbook", coin)
+	return http.Get(url)
+}

@@ -112,3 +112,18 @@ func (c *Client) GetDaySummary(coin types.Coin, day, month, year int) (*types.Da
 
 	return response, nil
 }
+
+func (c *Client) GetOrderbook(coin types.Coin) (*types.Orderbook, error) {
+	res, err := c.Service.GetOrderbook(coin)
+	if err != nil {
+		return nil, err
+	}
+
+	var response *types.Orderbook
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding orderbook for coin %s: %w", coin, err)
+	}
+
+	return response, nil
+}

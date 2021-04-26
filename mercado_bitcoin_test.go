@@ -27,6 +27,7 @@ type StubMercadoBitcoinAPI struct {
 	FakeGetTicker     func() (*http.Response, error)
 	FakeGetTrades     func() (*http.Response, error)
 	FakeGetDaySummary func() (*http.Response, error)
+	FakeGetOrderbook  func() (*http.Response, error)
 }
 
 func (s *StubMercadoBitcoinAPI) GetTicker(coin types.Coin) (*http.Response, error) {
@@ -39,6 +40,10 @@ func (s *StubMercadoBitcoinAPI) GetTrades(coin types.Coin, filter *service.GetTr
 
 func (s *StubMercadoBitcoinAPI) GetDaySummary(coin types.Coin, day, month, year int) (*http.Response, error) {
 	return s.FakeGetDaySummary()
+}
+
+func (s *StubMercadoBitcoinAPI) GetOrderbook(coin types.Coin) (*http.Response, error) {
+	return s.FakeGetOrderbook()
 }
 
 func TestClientGetTicker(t *testing.T) {
@@ -225,6 +230,40 @@ func TestClientGetDaySummary(t *testing.T) {
 			t.Fatalf("didnt expected response, got %v", resp)
 		}
 	})
+}
+
+func TestClientGetOrderbook(t *testing.T) {
+	orderbookTestData, err := ioutil.ReadFile("./testdata/orderbook.json")
+	if err != nil {
+		t.Fatal("could not read testdata/orderbook.json")
+	}
+
+	fakeResponse := func() (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       ioutil.NopCloser(strings.NewReader(string(orderbookTestData))),
+		}, nil
+	}
+
+	api := &mercadobitcoin.Client{
+		Service: &StubMercadoBitcoinAPI{
+			FakeGetOrderbook: fakeResponse,
+		},
+	}
+
+	res, err := api.GetOrderbook("BTC")
+	if err != nil {
+		t.Fatalf("didn't expected error, got %q", err)
+	}
+	if res == nil {
+		t.Fatal("expected response, got nil")
+	}
+	if len(res.Asks) == 0 {
+		t.Errorf("expected at least one Ask, got none")
+	}
+	if len(res.Bids) == 0 {
+		t.Errorf("expected at least one Bid, got none")
+	}
 }
 
 func assertError(t testing.TB, err error) {
