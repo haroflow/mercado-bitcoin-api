@@ -24,10 +24,15 @@ var FakeResponse500 = func() (*http.Response, error) {
 }
 
 type StubMercadoBitcoinAPI struct {
+	FakeGetCoins      func() (*http.Response, error)
 	FakeGetTicker     func() (*http.Response, error)
 	FakeGetTrades     func() (*http.Response, error)
 	FakeGetDaySummary func() (*http.Response, error)
 	FakeGetOrderbook  func() (*http.Response, error)
+}
+
+func (s *StubMercadoBitcoinAPI) GetCoins() (*http.Response, error) {
+	return s.FakeGetCoins()
 }
 
 func (s *StubMercadoBitcoinAPI) GetTicker(coin types.Coin) (*http.Response, error) {
@@ -263,6 +268,32 @@ func TestClientGetOrderbook(t *testing.T) {
 	}
 	if len(res.Bids) == 0 {
 		t.Errorf("expected at least one Bid, got none")
+	}
+}
+
+func TestClientGetCoins(t *testing.T) {
+	fakeResponse := func() (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 200,
+			Body:       ioutil.NopCloser(strings.NewReader(`["BCH","BTC","ETH","LTC","XRP","MBPRK01","MBPRK02","MBPRK03","MBPRK04","MBCONS01","USDC","WBX","CHZ","MBCONS02","PAXG","MBVASCO01","LINK","PSGFT","JUVFT","ASRFT","ATMFT","GALFT","CAIFT","MCO2","ACMFT","OGFT"]`)),
+		}, nil
+	}
+
+	api := &mercadobitcoin.Client{
+		Service: &StubMercadoBitcoinAPI{
+			FakeGetCoins: fakeResponse,
+		},
+	}
+
+	res, err := api.GetCoins()
+	if err != nil {
+		t.Fatalf("didn't expected error, got %q", err)
+	}
+	if res == nil {
+		t.Fatal("expected response, got nil")
+	}
+	if len(res) == 0 {
+		t.Errorf("expected at least one Coin, got none")
 	}
 }
 

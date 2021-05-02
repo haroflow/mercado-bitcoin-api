@@ -24,6 +24,24 @@ func NewClient() *Client {
 	}
 }
 
+// GetCoins returns the list of available coins.
+func (m *Client) GetCoins() ([]string, error) {
+	resp, err := m.Service.GetCoins()
+	if err != nil {
+		return nil, fmt.Errorf("error requesting coin list: %s", err)
+	}
+	defer resp.Body.Close()
+
+	var response []string
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		msg, _ := ioutil.ReadAll(resp.Body)
+		return nil, fmt.Errorf("error decoding coin list: %s: %s", msg, err)
+	}
+
+	return response, nil
+}
+
 // GetTicker returns the 24-hour summary for the coin.
 func (m *Client) GetTicker(coin types.Coin) (*types.Ticker, error) {
 	resp, err := m.Service.GetTicker(coin)

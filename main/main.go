@@ -13,6 +13,20 @@ func main() {
 	fmt.Println("Mercado Bitcoin API")
 	fmt.Println()
 
+	api := mercadobitcoin.NewClient()
+
+	fmt.Println("# Coin list:")
+	{
+		coins, err := api.GetCoins()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Println(coins)
+	}
+	fmt.Println()
+
 	fmt.Println("# Ticker example:")
 	coins := []types.Coin{
 		"BTC",
@@ -21,7 +35,6 @@ func main() {
 		"XRP",
 	}
 
-	api := mercadobitcoin.NewClient()
 	for _, coin := range coins {
 		ticker, err := api.GetTicker(coin)
 		if err != nil {

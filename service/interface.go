@@ -8,6 +8,7 @@ import (
 
 // ServiceInterface is used to implement a Mercado Bitcoin API service.
 type ServiceInterface interface {
+	GetCoins() (*http.Response, error)
 	GetTicker(coin types.Coin) (*http.Response, error)
 	GetTrades(coin types.Coin, filter *GetTradesFilter) (*http.Response, error)
 	GetDaySummary(coin types.Coin, day, month, year int) (*http.Response, error)

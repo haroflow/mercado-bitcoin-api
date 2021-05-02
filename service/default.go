@@ -10,6 +10,11 @@ import (
 // Default is used to request HTTP data from the API. Implements ServiceInterface.
 type Default struct{}
 
+func (d *Default) GetCoins() (*http.Response, error) {
+	url := "https://www.mercadobitcoin.net/api/coins"
+	return http.Get(url)
+}
+
 func (d *Default) GetTicker(coin types.Coin) (*http.Response, error) {
 	url := "https://www.mercadobitcoin.net/api/" + string(coin) + "/ticker/"
 	return http.Get(url)

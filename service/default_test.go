@@ -187,6 +187,19 @@ func TestGetOrderbook(t *testing.T) {
 	})
 }
 
+func TestGetCoins(t *testing.T) {
+	s := &service.Default{}
+	resp, err := s.GetCoins()
+
+	assertNoError(t, err)
+	if resp == nil {
+		t.Fatal("expected a response, got nil")
+	}
+	if resp.StatusCode != 200 {
+		t.Errorf("expected status 200, got %d", resp.StatusCode)
+	}
+}
+
 func assertNoError(t testing.TB, err error) {
 	t.Helper()
 	if err != nil {
